@@ -55,6 +55,28 @@ int luaopen_debugger(lua_State *lua){
 static const char *MODULE_NAME = "DEBUGGER_LUA_MODULE";
 static const char *MSGH = "DEBUGGER_LUA_MSGH";
 
+void luaL_requiref(lua_State *L, char const* modname,
+                    lua_CFunction openf, int glb) {
+  luaL_checkstack(L, 3, "not enough stack slots");
+  lua_getglobal(L, "package");
+  lua_getfield(L, -1, "loaded");
+  lua_pop(L, 1);
+  lua_getfield(L, -1, modname);
+  if (lua_isnil(L, -1) == 1) {
+    lua_pop(L, 1);
+    lua_pushcfunction(L, openf);
+    lua_pushstring(L, modname);
+    lua_call(L, 1, 1);
+    lua_pushvalue(L, -1);
+    lua_setfield(L, -3, modname);
+  }
+  lua_remove(L, -2);
+  if (glb) {
+    lua_pushvalue(L, -1);
+    lua_setglobal(L, modname);
+  }
+}
+
 void dbg_setup(lua_State *lua, const char *name, const char *globalName, lua_CFunction readFunc, lua_CFunction writeFunc){
 	// Check that the module name was not already defined.
 	lua_getfield(lua, LUA_REGISTRYINDEX, MODULE_NAME);
