@@ -1,4 +1,4 @@
-local lua_src = string.format("%q", io.open(arg[1]):read())
+local lua_src = string.format("%q", io.open(arg[1]):read("*all"))
 
 -- Fix the weird escape characters
 lua_src = string.gsub(lua_src, "\\\n", "\\n")
